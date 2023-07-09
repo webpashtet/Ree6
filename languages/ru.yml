@@ -126,7 +126,7 @@ label:
   oldColor: "Старый цвет"
   newColor: "Новый цвет"
   overallMembers: "Всего участников"
-  realMembers: "Из них людей"
+  realMembers: "Людей"
   botMembers: "Ботов"
   temporalVoiceName: "Временный голосовой канал #%s"
   chat: "Чат"
