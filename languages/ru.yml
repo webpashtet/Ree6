@@ -193,6 +193,14 @@ label:
   musicQuizArtistGuess: "Угадать исполнителя песни в музыкальном тесте"
   musicQuizTitleGuess: "Угадать название песни в музыкальном тесте"
   rewards: "Призы"
+  gameservers:
+    status: "Статус"
+    name: "Название сервера"
+    ip: "IP адрес"
+    players: "Игроки"
+    map: "Текущая карта"
+    location: "Локация"
+    game: "Игра"
 message:
   default:
     usage: "Использование {guild_prefix}%s."
