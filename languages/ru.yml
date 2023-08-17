@@ -1,7 +1,7 @@
 language:
   name: "Russian"
   locale: "ru"
-  version: "3.0.6"
+  version: "3.0.13"
   author: "Trusty"
 logging:
   banned: ":airplane_departure: %s **забанен.**"
@@ -201,6 +201,7 @@ label:
     map: "Текущая карта"
     location: "Локация"
     game: "Игра"
+  sendToChat: "Отправить в чат"
 message:
   default:
     usage: "Использование {guild_prefix}%s."
@@ -283,7 +284,7 @@ message:
     invalidInvite: "Пожалуйста, предоставьте корректное время!"
     gameAlreadyStarted: "Игра приостановлена"
     availableGames: "Доступные игры:"
-  hornyJail: "%s был(-а) посажен(-а) в Хорни тюрьму"
+  hornyJail: "%s был(-а) посажен(-а) в тюрьму"
   hug: "%s был(-а) обнят %s!"
   kiss: "%s был(-а) поцелован %s!"
   manga:
@@ -295,7 +296,7 @@ message:
     recordingStarted: "Теперь я записываю голосовой канал!"
     recordingStopped: "Запись началась!"
     recordingError: "Произошла ошибка во время отчета."
-  slap: "%s получил(-а) пощечину от %s!"
+  slap: "%s получил(-а) по ебальничку от %s!"
   addon:
     list: "Список объявлений:"
     reloadAll: "Reloading Addons ...."
@@ -493,6 +494,8 @@ message:
     stopReason: "Запись прикрашена."
     stopped: "Ваше аудио было преобразовано и теперь доступно для скачивания!"
     error: "Что-то пошло не так при преобразовании вашего аудио!\nПричина: %s"
+    inChat: "Ваша запись должна быть ниже этого сообщения!"
+    notFound: "Мы не смогли найти запрошенную запись!"
   reactions:
     roleAssign: "Вы назначили роль %s для реакции!"
     reactionNeeded: "Вам нужно отреагировать на это сообщение той реакцией, которой вы хотите назначить %s!"

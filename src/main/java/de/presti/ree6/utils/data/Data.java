@@ -96,6 +96,30 @@ public class Data {
     }
 
     /**
+     * Check if the module notification should be hidden.
+     * @return if the module notification should be hidden.
+     */
+    public static boolean shouldHideModuleNotification() {
+        return Main.getInstance().getConfig().getConfiguration().getBoolean("bot.misc.hideModuleNotification", false);
+    }
+
+    /**
+     * Check if the bot should be able to send the recordings in chat.
+     * @return if the bot is allowed to send the recordings in chat.
+     */
+    public static boolean allowRecordingInChat() {
+        return Main.getInstance().getConfig().getConfiguration().getBoolean("bot.misc.allowRecordingInChat", false);
+    }
+
+    /**
+     * Get the configured default language.
+     * @return the default language from the config.
+     */
+    public static String getDefaultLanguage() {
+        return Main.getInstance().getConfig().getConfiguration().getString("bot.misc.defaultLanguage", "en-GB");
+    }
+
+    /**
      * Get the configured Twitch Auth Url.
      * @return the Twitch Auth Url from the config.
      */
@@ -125,6 +149,21 @@ public class Data {
      */
     public static String getDefaultPrefix() {
         return Main.getInstance().getConfig().getConfiguration().getString("bot.misc.defaultPrefix", "ree!");
+    }
+
+    /**
+     * Get the configured Font for the text.
+     * @return the Font for the text from the config.
+     */
+    public static String getTextFont() {
+        return Main.getInstance().getConfig().getConfiguration().getString("bot.misc.textFont", "Verdana");
+    }
+
+    /**
+     * Check if the bot should run in debug mode.
+     */
+    public static boolean isDebug() {
+        return Main.getInstance().getConfig().getConfiguration().getBoolean("bot.misc.debug", false);
     }
 }
 

@@ -345,12 +345,12 @@ public class CommandManager {
         }
 
         // Check if this is a Developer build, if not then cooldown the User.
-        if (!BotWorker.getVersion().isDebug()) {
+        if (!Data.isDebug()) {
             ThreadUtil.createThread(x -> ArrayUtil.commandCooldown.remove(member.getUser().getId()), null, Duration.ofSeconds(5), false, false);
         }
 
         // Add them to the Cooldown.
-        if (!ArrayUtil.commandCooldown.contains(member.getUser().getId()) && !BotWorker.getVersion().isDebug()) {
+        if (!ArrayUtil.commandCooldown.contains(member.getUser().getId()) && !Data.isDebug()) {
             ArrayUtil.commandCooldown.add(member.getUser().getId());
         }
 
@@ -397,7 +397,7 @@ public class CommandManager {
 
         // Check if there is even a Command with that name.
         if (command == null && Data.isModuleActive("customcommands")) {
-            CustomCommand customCommand = SQLSession.getSqlConnector().getSqlWorker().getEntity(new CustomCommand(), "SELECT * FROM CustomCommands WHERE guild=:gid AND COMMAND=:command", Map.of("gid", guild.getId(), "command", arguments[0].toLowerCase()));
+            CustomCommand customCommand = SQLSession.getSqlConnector().getSqlWorker().getEntity(new CustomCommand(), "FROM CustomCommand WHERE guildId=:gid AND name=:command", Map.of("gid", guild.getId(), "command", arguments[0].toLowerCase()));
             if (customCommand != null) {
                 MessageChannelUnion messageChannelUnion = textChannel;
 
@@ -476,7 +476,7 @@ public class CommandManager {
      * @return true, if yes | false, if not.
      */
     public boolean isTimeout(User user) {
-        return ArrayUtil.commandCooldown.contains(user.getId()) && !BotWorker.getVersion().isDebug();
+        return ArrayUtil.commandCooldown.contains(user.getId()) && !Data.isDebug();
     }
 
     /**

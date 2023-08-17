@@ -41,12 +41,14 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceGuildDeafenEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
+import net.dv8tion.jda.internal.utils.PermissionUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -102,7 +104,7 @@ public class OtherEvents extends ListenerAdapter {
     @Override
     public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
 
-        ChannelStats channelStats = SQLSession.getSqlConnector().getSqlWorker().getEntity(new ChannelStats(), "SELECT * FROM ChannelStats WHERE GID=:gid", Map.of("gid", event.getGuild().getId()));
+        ChannelStats channelStats = SQLSession.getSqlConnector().getSqlWorker().getEntity(new ChannelStats(), "FROM ChannelStats WHERE guildId=:gid", Map.of("gid", event.getGuild().getId()));
         if (channelStats != null) {
             if (channelStats.getMemberStatsChannelId() != null) {
                 GuildChannel guildChannel = event.getGuild().getGuildChannelById(channelStats.getMemberStatsChannelId());
@@ -134,7 +136,7 @@ public class OtherEvents extends ListenerAdapter {
 
         WebhookMessageBuilder wmb = new WebhookMessageBuilder();
 
-        wmb.setAvatarUrl(event.getJDA().getSelfUser().getAvatarUrl());
+        wmb.setAvatarUrl(event.getJDA().getSelfUser().getEffectiveAvatarUrl());
         wmb.setUsername("Welcome!");
 
         String messageContent = SQLSession.getSqlConnector().getSqlWorker().getSetting(event.getGuild().getId(), "message_join")
@@ -166,7 +168,7 @@ public class OtherEvents extends ListenerAdapter {
     public void onGuildMemberRemove(@NotNull GuildMemberRemoveEvent event) {
         super.onGuildMemberRemove(event);
 
-        ChannelStats channelStats = SQLSession.getSqlConnector().getSqlWorker().getEntity(new ChannelStats(), "SELECT * FROM ChannelStats WHERE GID=:gid", Map.of("gid", event.getGuild().getId()));
+        ChannelStats channelStats = SQLSession.getSqlConnector().getSqlWorker().getEntity(new ChannelStats(), "FROM ChannelStats WHERE guildId=:gid", Map.of("gid", event.getGuild().getId()));
         if (channelStats != null) {
             if (channelStats.getMemberStatsChannelId() != null) {
                 GuildChannel guildChannel = event.getGuild().getGuildChannelById(channelStats.getMemberStatsChannelId());
@@ -193,7 +195,7 @@ public class OtherEvents extends ListenerAdapter {
         }
 
         if (Data.isModuleActive("tickets")) {
-            Tickets tickets = SQLSession.getSqlConnector().getSqlWorker().getEntity(new Tickets(), "SELECT * FROM Tickets WHERE GUILDID=:gid", Map.of("gid", event.getGuild().getIdLong()));
+            Tickets tickets = SQLSession.getSqlConnector().getSqlWorker().getEntity(new Tickets(), "FROM Tickets WHERE guildId=:gid", Map.of("gid", event.getGuild().getIdLong()));
             if (tickets != null) {
                 Category category = event.getGuild().getCategoryById(tickets.getTicketCategory());
 
@@ -265,7 +267,7 @@ public class OtherEvents extends ListenerAdapter {
             }
 
             if (Data.isModuleActive("temporalvoice")) {
-                TemporalVoicechannel temporalVoicechannel = SQLSession.getSqlConnector().getSqlWorker().getEntity(new TemporalVoicechannel(), "SELECT * FROM TemporalVoicechannel WHERE GID=:gid", Map.of("gid", event.getGuild().getId()));
+                TemporalVoicechannel temporalVoicechannel = SQLSession.getSqlConnector().getSqlWorker().getEntity(new TemporalVoicechannel(), "FROM TemporalVoicechannel WHERE guildId=:gid", Map.of("gid", event.getGuild().getId()));
 
                 if (temporalVoicechannel != null) {
                     VoiceChannel voiceChannel = event.getGuild().getVoiceChannelById(event.getChannelJoined().getId());
@@ -331,7 +333,7 @@ public class OtherEvents extends ListenerAdapter {
             }
         } else {
 
-            TemporalVoicechannel temporalVoicechannel = SQLSession.getSqlConnector().getSqlWorker().getEntity(new TemporalVoicechannel(), "SELECT * FROM TemporalVoicechannel WHERE GID=:gid", Map.of("gid", event.getGuild().getId()));
+            TemporalVoicechannel temporalVoicechannel = SQLSession.getSqlConnector().getSqlWorker().getEntity(new TemporalVoicechannel(), "FROM TemporalVoicechannel WHERE guildId=:gid", Map.of("gid", event.getGuild().getId()));
 
             if (temporalVoicechannel != null) {
                 VoiceChannel voiceChannel = event.getGuild().getVoiceChannelById(event.getChannelJoined().getId());
@@ -367,6 +369,21 @@ public class OtherEvents extends ListenerAdapter {
 
         if (!event.isGuildDeafened()) {
             event.getGuild().getSelfMember().deafen(true).queue();
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public void onMessageDelete(@NotNull MessageDeleteEvent event) {
+        super.onMessageDelete(event);
+
+        if (ArrayUtil.musicPanelList.containsKey(event.getGuild().getIdLong())) {
+            long id = ArrayUtil.musicPanelList.get(event.getGuild().getIdLong()).getIdLong();
+            if (id == event.getMessageIdLong()) {
+                ArrayUtil.musicPanelList.remove(event.getGuild().getIdLong());
+            }
         }
     }
 
@@ -430,8 +447,10 @@ public class OtherEvents extends ListenerAdapter {
                     if (event.getMessage().getMessageReference() != null) return;
 
                     try {
-                        Main.getInstance().getCommandManager().sendMessage(ChatGPTAPI.getResponse(event.getMember(),
-                                event.getMessage().getContentDisplay()), event.getChannel());
+                        String response = ChatGPTAPI.getResponse(event.getMember(), event.getMessage().getContentDisplay());
+
+                        if (response != null && !response.isBlank())
+                            Main.getInstance().getCommandManager().sendMessage(response, event.getChannel());
                     } catch (Exception e) {
                         Sentry.captureException(e);
                         Main.getInstance().getCommandManager().sendMessage(LanguageService.getByGuild(event.getGuild(), "message.default.retrievalError"), event.getChannel());
@@ -470,6 +489,8 @@ public class OtherEvents extends ListenerAdapter {
         if (!Data.isModuleActive("reactionRoles")) return;
 
         if (event.getMember() == null) return;
+
+        if (!PermissionUtil.checkPermission(event.getGuild().getSelfMember(), Permission.MESSAGE_HISTORY)) return;
 
         event.retrieveMessage().queue(message -> {
 
@@ -513,7 +534,7 @@ public class OtherEvents extends ListenerAdapter {
                     }
                 }
             } else {
-                ReactionRole reactionRole = SQLSession.getSqlConnector().getSqlWorker().getEntity(new ReactionRole(), "SELECT * FROM ReactionRole WHERE gid=:gid AND emoteId=:emoteId AND messageId=:messageId", Map.of("gid", event.getGuild().getIdLong(), "emoteId", emojiId, "messageId", message.getIdLong()));
+                ReactionRole reactionRole = SQLSession.getSqlConnector().getSqlWorker().getEntity(new ReactionRole(), "FROM ReactionRole WHERE guildId=:gid AND emoteId=:emoteId AND messageId=:messageId", Map.of("gid", event.getGuild().getIdLong(), "emoteId", emojiId, "messageId", message.getIdLong()));
 
                 if (reactionRole != null) {
                     Role role = event.getGuild().getRoleById(reactionRole.getRoleId());
@@ -559,7 +580,7 @@ public class OtherEvents extends ListenerAdapter {
         }
 
         ReactionRole reactionRole = SQLSession.getSqlConnector().getSqlWorker().getEntity(new ReactionRole(),
-                "SELECT * FROM ReactionRole WHERE gid=:gid AND emoteId=:emoteId AND messageId=:messageId",
+                "FROM ReactionRole WHERE guildId=:gid AND emoteId=:emoteId AND messageId=:messageId",
                 Map.of("gid", event.getGuild().getIdLong(), "emoteId", emojiId, "messageId", event.getMessageIdLong()));
 
         if (reactionRole != null) {

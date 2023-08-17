@@ -304,7 +304,7 @@ public class Blackjack implements IGame {
         nextPlayer.getInteractionHook().editOriginalComponents(new ArrayList<>()).queue();
 
         Main.getInstance().getCommandManager().sendMessage(messageCreateBuilder.build(), session.getChannel());
-        rewardPlayer(session, winner, SQLSession.getSqlConnector().getSqlWorker().getEntity(new Setting(), "SELECT * FROM Settings WHERE GID=:gid AND NAME=:name",
+        rewardPlayer(session, winner, SQLSession.getSqlConnector().getSqlWorker().getEntity(new Setting(), "FROM Setting WHERE guildId=:gid AND NAME=:name",
                 Map.of("gid", session.getGuild().getIdLong(), "name", "configuration_rewards_blackjack_win")).getValue());
         stopGame();
     }
@@ -320,7 +320,7 @@ public class Blackjack implements IGame {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle(LanguageService.getByGuild(session.getGuild(), "label.blackJack"));
         embedBuilder.setColor(BotWorker.randomEmbedColor());
-        embedBuilder.setAuthor(currentPlayer.getRelatedUser().getAsTag(), null, currentPlayer.getRelatedUser().getAvatarUrl());
+        embedBuilder.setAuthor(currentPlayer.getRelatedUser().getAsTag(), null, currentPlayer.getRelatedUser().getEffectiveAvatarUrl());
         embedBuilder.addField(LanguageService.getByGuild(session.getGuild(), "label.userCardsSelf"), LanguageService.getByGuild(session.getGuild(), "message.blackJackGame.playerHand",currentPlayer.getHandAsString(true), currentPlayer.getHandValue(true)), true);
         embedBuilder.addField(LanguageService.getByGuild(session.getGuild(), "label.userCards", nextPlayer.getRelatedUser().getAsTag()), LanguageService.getByGuild(session.getGuild(), "message.blackJackGame.playerHand",nextPlayer.getHandAsString(false), nextPlayer.getHandValue(false)), true);
 
@@ -331,7 +331,7 @@ public class Blackjack implements IGame {
 
         currentPlayer.getInteractionHook().editOriginal(messageEditBuilder.build()).queue();
 
-        embedBuilder.setAuthor(nextPlayer.getRelatedUser().getAsTag(), null, nextPlayer.getRelatedUser().getAvatarUrl());
+        embedBuilder.setAuthor(nextPlayer.getRelatedUser().getAsTag(), null, nextPlayer.getRelatedUser().getEffectiveAvatarUrl());
         embedBuilder.clearFields();
         embedBuilder.addField(LanguageService.getByGuild(session.getGuild(), "label.userCardsSelf"), LanguageService.getByGuild(session.getGuild(), "message.blackJackGame.playerHand",nextPlayer.getHandAsString(true), nextPlayer.getHandValue(true)), true);
         embedBuilder.addField(LanguageService.getByGuild(session.getGuild(), "label.userCards", currentPlayer.getRelatedUser().getAsTag()), LanguageService.getByGuild(session.getGuild(),"message.blackJackGame.playerHand", currentPlayer.getHandAsString(false), currentPlayer.getHandValue(false)), true);

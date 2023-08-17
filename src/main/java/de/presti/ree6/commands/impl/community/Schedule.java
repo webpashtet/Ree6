@@ -10,6 +10,7 @@ import de.presti.ree6.sql.entities.webhook.WebhookScheduledMessage;
 import de.presti.ree6.utils.data.Data;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Webhook;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -58,7 +59,7 @@ public class Schedule implements ICommand {
                 StringBuilder stringBuilder = new StringBuilder();
 
                 for (ScheduledMessage scheduledMessage : SQLSession.getSqlConnector().getSqlWorker()
-                        .getEntityList(new ScheduledMessage(), "SELECT * FROM ScheduledMessage WHERE guild = :gid ",
+                        .getEntityList(new ScheduledMessage(), "FROM ScheduledMessage WHERE guildId = :gid ",
                                 Map.of("gid", commandEvent.getGuild().getIdLong()))) {
                     stringBuilder.append(scheduledMessage.getId()).append(" ").append("-").append(" ")
                             .append(scheduledMessage.getMessage()).append(" ")
@@ -74,7 +75,7 @@ public class Schedule implements ICommand {
                 OptionMapping id = commandEvent.getOption("id");
 
                 ScheduledMessage scheduledMessage = SQLSession.getSqlConnector().getSqlWorker()
-                        .getEntity(new ScheduledMessage(), "SELECT * FROM ScheduledMessage WHERE guild = :gid AND Id = :id",
+                        .getEntity(new ScheduledMessage(), "FROM ScheduledMessage WHERE guildId = :gid AND Id = :id",
                                 Map.of("gid", commandEvent.getGuild().getIdLong(), "id", id.getAsLong()));
 
                 if (scheduledMessage != null) {
@@ -110,7 +111,7 @@ public class Schedule implements ICommand {
 
                 WebhookScheduledMessage webhookScheduledMessage =
                         SQLSession.getSqlConnector().getSqlWorker().getEntity(new WebhookScheduledMessage(),
-                                "SELECT * FROM ScheduledMessageWebhooks WHERE gid = :gid AND actualChannelId = :channel",
+                                "FROM WebhookScheduledMessage WHERE guildId = :gid AND channelId = :channel",
                                 Map.of("gid", commandEvent.getGuild().getId(),"channel", guildChannel.getIdLong()));
 
                 if (webhookScheduledMessage == null) {
@@ -137,7 +138,7 @@ public class Schedule implements ICommand {
     public CommandData getCommandData() {
         return new CommandDataImpl("schedule", "command.description.schedule")
                 .addSubcommands(new SubcommandData("create", "Create a new scheduled Message.")
-                        .addOption(OptionType.CHANNEL, "channel", "The channel it should be sent to.", true)
+                        .addOptions(new OptionData(OptionType.CHANNEL, "channel", "The channel it should be sent to.", true).setChannelTypes(ChannelType.NEWS, ChannelType.TEXT))
                         .addOption(OptionType.BOOLEAN, "repeat", "If the schedule should be repeated.", true)
                                 .addOption(OptionType.INTEGER, "month", "The months of the delay.", false)
                                 .addOption(OptionType.INTEGER, "day", "The days of the delay.", false)

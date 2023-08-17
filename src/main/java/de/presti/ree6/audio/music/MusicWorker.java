@@ -12,7 +12,7 @@ import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import de.presti.ree6.audio.music.source.RestrictedHttpAudioSourceManager;
+import de.presti.ree6.api.events.MusicPlayerStateChangeEvent;
 import de.presti.ree6.commands.CommandEvent;
 import de.presti.ree6.language.LanguageService;
 import de.presti.ree6.main.Main;
@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
 
 /**
  * Wrapper class that handles most Music related stuff.
@@ -169,9 +170,9 @@ public class MusicWorker {
 
                 Main.getInstance().getCommandManager().sendMessage(new EmbedBuilder()
                                 .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(),
-                                        guild.getJDA().getSelfUser().getAvatarUrl())
+                                        guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                                 .setTitle(LanguageService.getByGuild(guild, "label.musicPlayer"))
-                                .setThumbnail(guild.getJDA().getSelfUser().getAvatarUrl())
+                                .setThumbnail(guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                                 .setColor(Color.RED)
                                 .setDescription(LanguageService.getByGuild(guild, "message.music.notPlaying"))
                                 .setFooter(guild.getName() + " - " + Data.getAdvertisement(), guild.getIconUrl())
@@ -183,7 +184,7 @@ public class MusicWorker {
         final AudioChannel finalAudioChannel = audioChannel;
         MessageChannel messageChannel = channel;
 
-        playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
+        playerManager.loadItemOrdered(musicManager, trackUrl.trim(), new AudioLoadResultHandler() {
 
             /**
              * Just override the default trackLoaded with a simple play call.
@@ -193,9 +194,9 @@ public class MusicWorker {
             public void trackLoaded(AudioTrack track) {
                 if (!silent)
                     Main.getInstance().getCommandManager().sendMessage(new EmbedBuilder()
-                            .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(), guild.getJDA().getSelfUser().getAvatarUrl())
+                            .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(), guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                             .setTitle(LanguageService.getByGuild(guild, "label.musicPlayer"))
-                            .setThumbnail(guild.getJDA().getSelfUser().getAvatarUrl())
+                            .setImage(track.getInfo().artworkUrl.isBlank() ? guild.getJDA().getSelfUser().getEffectiveAvatarUrl() : track.getInfo().artworkUrl)
                             .setColor(Color.GREEN)
                             .setDescription(LanguageService.getByGuild(guild, "message.music.queueAdded.default", FormatUtil.filter(track.getInfo().title)))
                             .setFooter(guild.getName() + " - " + Data.getAdvertisement(), guild.getIconUrl()), 5, messageChannel, interactionHook);
@@ -218,9 +219,9 @@ public class MusicWorker {
 
                 if (!silent)
                     Main.getInstance().getCommandManager().sendMessage(new EmbedBuilder()
-                            .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(), guild.getJDA().getSelfUser().getAvatarUrl())
+                            .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(), guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                             .setTitle(LanguageService.getByGuild(guild, "label.musicPlayer"))
-                            .setThumbnail(guild.getJDA().getSelfUser().getAvatarUrl())
+                            .setThumbnail(guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                             .setColor(Color.GREEN)
                             .setDescription(LanguageService.getByGuild(guild, "message.music.queueAdded.firstOfList", FormatUtil.filter(firstTrack.getInfo().title), FormatUtil.filter(playlist.getName())))
                             .setFooter(guild.getName() + " - " + Data.getAdvertisement(), guild.getIconUrl()), 5, messageChannel, interactionHook);
@@ -239,11 +240,13 @@ public class MusicWorker {
              */
             @Override
             public void noMatches() {
+                Main.getInstance().getEventBus().post(new MusicPlayerStateChangeEvent(guild, MusicPlayerStateChangeEvent.State.ERROR, null));
+
                 if (!silent)
                     Main.getInstance().getCommandManager().sendMessage(new EmbedBuilder()
-                            .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(), guild.getJDA().getSelfUser().getAvatarUrl())
+                            .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(), guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                             .setTitle(LanguageService.getByGuild(guild, "label.musicPlayer"))
-                            .setThumbnail(guild.getJDA().getSelfUser().getAvatarUrl())
+                            .setThumbnail(guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                             .setColor(Color.GREEN)
                             .setDescription(LanguageService.getByGuild(guild, "message.music.searchUrlFailed", FormatUtil.filter(trackUrl)))
                             .setFooter(guild.getName() + " - " + Data.getAdvertisement(), guild.getIconUrl()), 5, messageChannel, interactionHook);
@@ -254,11 +257,13 @@ public class MusicWorker {
              */
             @Override
             public void loadFailed(FriendlyException exception) {
+                Main.getInstance().getEventBus().post(new MusicPlayerStateChangeEvent(guild, MusicPlayerStateChangeEvent.State.ERROR, null));
+
                 if (!silent)
                     Main.getInstance().getCommandManager().sendMessage(new EmbedBuilder()
-                            .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(), guild.getJDA().getSelfUser().getAvatarUrl())
+                            .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(), guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                             .setTitle(LanguageService.getByGuild(guild, "label.musicPlayer"))
-                            .setThumbnail(guild.getJDA().getSelfUser().getAvatarUrl())
+                            .setThumbnail(guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                             .setColor(Color.GREEN)
                             .setDescription(LanguageService.getByGuild(guild, "message.music.failedLoading", exception.getMessage()))
                             .setFooter(guild.getName() + " - " + Data.getAdvertisement(), guild.getIconUrl()), 5, messageChannel, interactionHook);
@@ -292,7 +297,8 @@ public class MusicWorker {
 
     /**
      * Play a specific song.
-     * @param value The song name or url.
+     *
+     * @param value        The song name or url.
      * @param commandEvent The command event.
      */
     public void playSong(String value, CommandEvent commandEvent) {
@@ -335,14 +341,21 @@ public class MusicWorker {
             }
 
             if (!isspotify) {
+                if (value.contains("youtu.be/") || value.contains("youtube.com/")) {
+                    Matcher matcher = YouTubeAPIHandler.getPattern().matcher(value);
+                    if (matcher.find()) {
+                        value = matcher.group(0);
+                    }
+                }
+
                 loadAndPlay(channel, Objects.requireNonNull(member.getVoiceState()).getChannel(), value, interactionHook, false);
             } else {
                 if (spotiftrackinfos.isEmpty()) {
                     EmbedBuilder em = new EmbedBuilder()
                             .setAuthor(guild.getJDA().getSelfUser().getName(),
-                                    Data.getWebsite(), guild.getJDA().getSelfUser().getAvatarUrl())
+                                    Data.getWebsite(), guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                             .setTitle(LanguageService.getByGuildOrInteraction(guild, interaction, "label.musicPlayer"))
-                            .setThumbnail(guild.getJDA().getSelfUser().getAvatarUrl())
+                            .setThumbnail(guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                             .setColor(Color.GREEN)
                             .setDescription(LanguageService.getByGuildOrInteraction(guild, interaction, "message.music.notFound", value))
                             .setFooter(guild.getName() + " - " + Data.getAdvertisement(), guild.getIconUrl());
@@ -377,9 +390,9 @@ public class MusicWorker {
                 if (!loadFailed.isEmpty()) {
                     EmbedBuilder em = new EmbedBuilder()
                             .setAuthor(guild.getJDA().getSelfUser().getName(),
-                                    Data.getWebsite(), guild.getJDA().getSelfUser().getAvatarUrl())
+                                    Data.getWebsite(), guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                             .setTitle(LanguageService.getByGuildOrInteraction(guild, interaction, "label.musicPlayer"))
-                            .setThumbnail(guild.getJDA().getSelfUser().getAvatarUrl())
+                            .setThumbnail(guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                             .setColor(Color.GREEN)
                             .setDescription(LanguageService.getByGuildOrInteraction(guild, interaction, "message.music.notFoundMultiple", loadFailed.size()))
                             .setFooter(guild.getName() + " - " + Data.getAdvertisement(), guild.getIconUrl());
@@ -393,9 +406,9 @@ public class MusicWorker {
                 ytResult = YouTubeAPIHandler.getInstance().searchYoutube(value);
             } catch (Exception exception) {
                 EmbedBuilder em = new EmbedBuilder()
-                        .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(), guild.getJDA().getSelfUser().getAvatarUrl())
+                        .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(), guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                         .setTitle(LanguageService.getByGuildOrInteraction(guild, interaction, "label.musicPlayer"))
-                        .setThumbnail(guild.getJDA().getSelfUser().getAvatarUrl())
+                        .setThumbnail(guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                         .setColor(Color.RED)
                         .setDescription(LanguageService.getByGuildOrInteraction(guild, interaction, "message.music.searchFailed"))
                         .setFooter(guild.getName() + " - " + Data.getAdvertisement(), guild.getIconUrl());
@@ -406,9 +419,9 @@ public class MusicWorker {
 
             if (ytResult == null) {
                 EmbedBuilder em = new EmbedBuilder()
-                        .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(), guild.getJDA().getSelfUser().getAvatarUrl())
+                        .setAuthor(guild.getJDA().getSelfUser().getName(), Data.getWebsite(), guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                         .setTitle(LanguageService.getByGuildOrInteraction(guild, interaction, "label.musicPlayer"))
-                        .setThumbnail(guild.getJDA().getSelfUser().getAvatarUrl())
+                        .setThumbnail(guild.getJDA().getSelfUser().getEffectiveAvatarUrl())
                         .setColor(Color.YELLOW)
                         .setDescription(LanguageService.getByGuildOrInteraction(guild, interaction, "message.music.notFound", FormatUtil.filter(value)))
                         .setFooter(guild.getName() + " - " + Data.getAdvertisement(), guild.getIconUrl());
