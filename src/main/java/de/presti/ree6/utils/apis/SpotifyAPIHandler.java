@@ -113,13 +113,16 @@ public class SpotifyAPIHandler {
      */
     public Track getTrack(String trackId) throws ParseException, SpotifyWebApiException, IOException {
         if (!isSpotifyConnected) return null;
-        if (retries.getOrDefault(trackId, 0) >= 3) return null;
+        if (retries.getOrDefault(trackId, 0) >= 3) throw new BadRequestException("Failed to receive Tracks 3 times in a row.");
 
         try {
-            return spotifyApi.getTrack(trackId).build().execute();
+            Track track = spotifyApi.getTrack(trackId).build().execute();
+            retries.remove(trackId);
+            return track;
         } catch (UnauthorizedException unauthorizedException) {
             if (spotifyApi.getClientId() != null) {
                 retries.put(trackId, retries.getOrDefault(trackId, 0) + 1);
+                isSpotifyConnected = false;
 
                 initSpotify();
                 return getTrack(trackId);
@@ -138,6 +141,9 @@ public class SpotifyAPIHandler {
     public ArrayList<Track> getTracks(String playlistId) {
         if (!isSpotifyConnected) return new ArrayList<>();
         ArrayList<Track> tracks = new ArrayList<>();
+
+        if (retries.getOrDefault(playlistId, 0) >= 3) return tracks;
+
         GetPlaylistRequest request = spotifyApi.getPlaylist(playlistId).build();
         try {
             Playlist playlist = request.execute();
@@ -149,10 +155,13 @@ public class SpotifyAPIHandler {
 
                 tracks.add(track1);
             }
+            retries.remove(playlistId);
         } catch (UnauthorizedException unauthorizedException) {
             if (spotifyApi.getClientId() != null) {
 
                 try {
+                    isSpotifyConnected = false;
+                    retries.put(playlistId, retries.getOrDefault(playlistId, 0) + 1);
                     initSpotify();
                 } catch (Exception exception) {
                     Sentry.captureException(exception);

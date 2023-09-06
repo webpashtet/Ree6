@@ -103,7 +103,7 @@
         <dependency>
             <groupId>me.presti</groupId>
             <artifactId>YoutubeWrapper</artifactId>
-            <version>bb6f9835a0</version>
+            <version>0ae3a59111</version>
         </dependency>
         <dependency>
             <groupId>me.presti</groupId>
@@ -128,12 +128,17 @@
             <artifactId>JLyrics</artifactId>
             <version>765f7e0b88</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.freyacodes</groupId>
+            <artifactId>Lavalink-Client</artifactId>
+            <version>d710034753</version>
+        </dependency>
 
         <!-- Third party APIs -->
         <dependency>
             <groupId>com.apptasticsoftware</groupId>
             <artifactId>rssreader</artifactId>
-            <version>3.4.6</version>
+            <version>3.5.0</version>
         </dependency>
         <dependency>
             <groupId>me.presti</groupId>
@@ -157,14 +162,14 @@
         <dependency>
             <groupId>de.ree6</groupId>
             <artifactId>Ree6-SQL</artifactId>
-            <version>2.0.9</version>
+            <version>ef051559d4</version>
         </dependency>
 
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.7</version>
+            <version>2.0.9</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>

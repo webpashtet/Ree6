@@ -22,12 +22,14 @@ public class Config {
     private YamlFile yamlFile;
 
     /**
+     * The YamlFile for the temp file.
+     */
+    private YamlFile yamlTempFile;
+
+    /**
      * Initialize the Configuration.
      */
     public void init() {
-
-        yamlFile = createConfiguration();
-
         try {
             Path storage = Path.of("storage");
             Path storageTemp = Path.of("storage/tmp");
@@ -40,6 +42,36 @@ public class Config {
         } catch (Exception exception) {
             log.error("Could not create Storage folder!", exception);
         }
+
+        createTemporalFile();
+        createConfigFile();
+    }
+
+    /**
+     * Create a new Temporal File.
+     */
+    public void createTemporalFile() {
+        yamlTempFile = createTemporal();
+
+        if (!getTemporalFile().exists()) {
+            yamlTempFile.options().copyHeader();
+            yamlTempFile.options().copyDefaults();
+            yamlTempFile.options().header("""
+                    ################################
+                    #                              #
+                    # Ree6 Temporal Info           #
+                    # by Presti                    #
+                    #                              #
+                    ################################
+                    """);
+        }
+    }
+
+    /**
+     * Create a new Config File.
+     */
+    public void createConfigFile() {
+        yamlFile = createConfiguration();
 
         if (!getFile().exists()) {
             yamlFile.options().copyHeader();
@@ -54,7 +86,7 @@ public class Config {
                     """);
             yamlFile.path("config")
                     .comment("Do not change this!")
-                    .path("version").addDefault("3.0.13")
+                    .path("version").addDefault("3.0.15")
                     .parent().path("creation").addDefault(System.currentTimeMillis());
 
             yamlFile.path("hikari")
@@ -124,6 +156,11 @@ public class Config {
                     .parent().path("reactionroles").addDefault(true).commentSide("Enable the reaction-roles module.")
                     .parent().path("slashcommands").addDefault(true).commentSide("Enable the slash-commands support.")
                     .parent().path("messagecommands").addDefault(true).commentSide("Enable the message-commands support.");
+
+            yamlFile.path("lavalink")
+                    .comment("Lavalink Configuration, for lavalink support.").blankLine()
+                    .path("url").addDefault("none")
+                    .parent().path("password").addDefault("none");
 
             yamlFile.path("heartbeat")
                     .comment("Heartbeat Configuration, for status reporting").blankLine()
@@ -198,7 +235,7 @@ public class Config {
         String configVersion = yamlFile.getString("config.version", "1.9.0");
 
         if (compareVersion(configVersion, BotWorker.getBuild()) || configVersion.equals(BotWorker.getBuild()) ||
-                configVersion.equals("3.0.13"))
+                configVersion.equals("3.0.15"))
             return;
 
         Map<String, Object> resources = yamlFile.getValues(true);
@@ -331,6 +368,40 @@ public class Config {
      */
     public File getFile() {
         return new File("config.yml");
+    }
+
+    /**
+     * Create a new Temporal Info file.
+     *
+     * @return The Temporal Info file as {@link YamlFile}.
+     */
+    public YamlFile createTemporal() {
+        try {
+            return yamlTempFile = new YamlFile(getTemporalFile());
+        } catch (Exception e) {
+            return new YamlFile();
+        }
+    }
+
+    /**
+     * Get the Temporal Info file.
+     *
+     * @return The Temporal Info file as {@link YamlFile}.
+     */
+    public YamlFile getTemporal() {
+        if (yamlTempFile == null)
+            return createTemporal();
+
+        return yamlTempFile;
+    }
+
+    /**
+     * Get the Temporal Info file.
+     *
+     * @return The Temporal Info file as {@link File}.
+     */
+    public File getTemporalFile() {
+        return new File("storage/temp.yml");
     }
 
 }

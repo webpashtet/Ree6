@@ -6,7 +6,6 @@ import de.presti.ree6.commands.interfaces.Command;
 import de.presti.ree6.commands.interfaces.ICommand;
 import de.presti.ree6.sql.SQLSession;
 import de.presti.ree6.sql.entities.Setting;
-import de.presti.ree6.sql.entities.economy.MoneyHolder;
 import de.presti.ree6.utils.data.EconomyUtil;
 import de.presti.ree6.utils.others.RandomUtils;
 import de.presti.ree6.utils.others.ThreadUtil;
@@ -16,11 +15,20 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Map;
 
+/**
+ * Work for money.
+ */
 @Command(name = "work", description = "command.description.work", category = Category.ECONOMY)
 public class Work implements ICommand {
 
+    /**
+     * List of every User that is on cooldown.
+     */
     ArrayList<String> workTimeout = new ArrayList<>();
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public void onPerform(CommandEvent commandEvent) {
         String entryString = commandEvent.getGuild().getIdLong() + "-" + commandEvent.getMember().getIdLong();
@@ -52,11 +60,17 @@ public class Work implements ICommand {
         ThreadUtil.createThread(x -> workTimeout.remove(entryString), Duration.ofSeconds(delay), false, false);
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public CommandData getCommandData() {
         return null;
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public String[] getAlias() {
         return new String[0];
