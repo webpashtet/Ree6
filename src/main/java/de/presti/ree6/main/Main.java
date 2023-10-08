@@ -624,7 +624,8 @@ public class Main {
 
             try {
                 // Need to load them all.
-                Main.getInstance().getNotifier().getCredentialManager().load();
+                if (Data.isModuleActive("notifier"))
+                    Main.getInstance().getNotifier().getCredentialManager().load();
 
                 for (TwitchIntegration twitchIntegrations :
                         SQLSession.getSqlConnector().getSqlWorker().getEntityList(new TwitchIntegration(), "FROM TwitchIntegration", null)) {
