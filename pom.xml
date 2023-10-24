@@ -47,7 +47,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>5.0.0-beta.15</version>
+            <version>5.0.0-beta.16</version>
         </dependency>
         <dependency>
             <groupId>dev.arbjerg</groupId>
@@ -115,7 +115,7 @@
         <dependency>
             <groupId>se.michaelthelin.spotify</groupId>
             <artifactId>spotify-web-api-java</artifactId>
-            <version>8.3.0</version>
+            <version>8.3.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-codec</groupId>
@@ -129,9 +129,9 @@
             <version>765f7e0b88</version>
         </dependency>
         <dependency>
-            <groupId>com.github.freyacodes</groupId>
+            <groupId>de.ree6</groupId>
             <artifactId>Lavalink-Client</artifactId>
-            <version>d710034753</version>
+            <version>a8e9e49a57</version>
         </dependency>
 
         <!-- Third party APIs -->
@@ -162,7 +162,7 @@
         <dependency>
             <groupId>de.ree6</groupId>
             <artifactId>Ree6-SQL</artifactId>
-            <version>bc6d176954</version>
+            <version>da659de9b2</version>
         </dependency>
 
         <!-- Logging -->
@@ -315,7 +315,7 @@
             <plugin>
                 <groupId>io.github.git-commit-id</groupId>
                 <artifactId>git-commit-id-maven-plugin</artifactId>
-                <version>6.0.0</version>
+                <version>7.0.0</version>
                 <executions>
                     <execution>
                         <id>get-the-git-infos</id>
